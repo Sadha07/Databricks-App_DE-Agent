@@ -1,0 +1,33 @@
+# Databricks Asset Bundle — declarative deploy of the app + its resources.
+# Docs: https://docs.databricks.com/dev-tools/bundles/index.html
+bundle:
+  name: de-agent
+
+variables:
+  warehouse_id:
+    description: SQL warehouse the agent runs generated SQL against.
+    default: ""
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://<workspace>.cloud.databricks.com
+    resources:
+      apps:
+        de_agent:
+          name: de-agent-dev
+          description: Autonomous Medallion data engineering agent (dev).
+          source_code_path: ./
+
+  prod:
+    mode: production
+    workspace:
+      host: https://<workspace>.cloud.databricks.com
+    resources:
+      apps:
+        de_agent:
+          name: de-agent
+          description: Autonomous Medallion data engineering agent.
+          source_code_path: ./

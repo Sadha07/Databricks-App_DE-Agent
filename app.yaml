@@ -1,0 +1,35 @@
+# Databricks Apps configuration.
+# The command starts Streamlit; Databricks provides $DATABRICKS_APP_PORT.
+command:
+  - streamlit
+  - run
+  - app.py
+  - --server.port
+  - "8000"
+  - --server.address
+  - "0.0.0.0"
+  - --server.headless
+  - "true"
+
+env:
+  - name: DE_AGENT_ENV
+    value: databricks
+  - name: LOG_JSON
+    value: "true"
+  - name: REQUIRE_APPROVAL
+    value: "true"
+  - name: TARGET_CATALOG
+    value: de_agent_dev
+  - name: ALLOW_CREATE_CATALOG
+    value: "false"
+  - name: LLM_PROVIDER
+    value: databricks
+  - name: DATABRICKS_LLM_ENDPOINT
+    value: databricks-claude-sonnet
+  # Secrets are resolved from a Databricks secret scope at deploy time.
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: de-agent-warehouse-id
+  - name: DATABASE_URL
+    valueFrom: de-agent-database-url
+  - name: GROQ_API_KEY
+    valueFrom: de-agent-groq-key
