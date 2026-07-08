@@ -160,6 +160,12 @@ class SdkDatabricksService:
     def create_notebook(self, *, path: str, cells: list[str]) -> str:
         from databricks.sdk.service.workspace import ImportFormat, Language
 
+        # Ensure all parent folders exist before importing; the SDK does not
+        # auto-create them and raises ResourceDoesNotExist if they are missing.
+        parent = path.rsplit("/", 1)[0]
+        if parent:
+            self._w.workspace.mkdirs(path=parent)
+
         source = "\n\n-- COMMAND ----------\n\n".join(cells)
         content = base64.b64encode(source.encode("utf-8")).decode("utf-8")
         self._w.workspace.import_(
@@ -170,6 +176,7 @@ class SdkDatabricksService:
             overwrite=True,
         )
         return path
+
 
     # ── introspection ──
     def get_table_info(self, fq_table: str) -> TableInfo:
