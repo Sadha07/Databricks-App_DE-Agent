@@ -1,4 +1,4 @@
-﻿"""Shared layer build loop.
+"""Shared layer build loop.
 
 One reusable routine that generates SQL, optionally gates on human approval via
 ``interrupt()``, executes, validates, and self-corrects by feeding errors/validation
@@ -142,14 +142,20 @@ def build_layer(
     notebook_path = db.create_notebook(
         path=f"/Shared/de_agent/{state['run_id']}/{layer}", cells=[sql]
     )
-    log.info("build.done", layer=layer, table=target_table, notebook=notebook_path)
+    # DDL statements (CREATE OR REPLACE TABLE AS SELECT) do not return a row count
+    # from the Databricks SQL API. Query the real count from the materialised table.
+    try:
+        real_row_count = db.get_table_info(target_table).row_count
+    except Exception:  # noqa: BLE001
+        real_row_count = run.rows_affected
+    log.info("build.done", layer=layer, table=target_table, notebook=notebook_path, rows=real_row_count)
     return {
         "sql_by_layer": {**state.get("sql_by_layer", {}), layer: sql},
         "tables_by_layer": {**state.get("tables_by_layer", {}), layer: target_table},
         "layer_status": {**state["layer_status"], layer: StageStatus.DONE.value},
         "validation": validation.model_dump(),
         "pending_artifact": {},
-        "messages": [ai(f"{layer.title()} complete â†’ `{target_table}` ({run.rows_affected} rows).")],
+        "messages": [ai(f"{layer.title()} complete â†’ `{target_table}` ({real_row_count:,} rows).")],
     }
 
 

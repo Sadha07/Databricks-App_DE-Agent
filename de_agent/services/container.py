@@ -1,4 +1,4 @@
-﻿"""Dependency container.
+"""Dependency container.
 
 Builds and holds the service instances for a run, choosing real vs. fake
 implementations based on settings. A single ``AppContainer`` is created by the UI
@@ -37,8 +37,20 @@ class AppContainer:
         self.validator = LayerValidator(self.databricks)
         self.documentation = DocumentationBuilder()
         self.lineage = LineageBuilder()
-        artifact_dir = str(Path(tempfile.gettempdir()) / "de_agent_artifacts")
+        # On Databricks, store artifacts in a UC Volume so they persist across
+        # app restarts. /tmp is ephemeral and wiped on every container restart.
+        if settings.environment is Environment.DATABRICKS:
+            artifact_dir = f"/Volumes/{settings.target_catalog}/de_agent_artifacts/artifacts"
+            # Idempotently provision the schema + volume so the path exists on first run.
+            try:
+                self.databricks.ensure_schema(settings.target_catalog, "de_agent_artifacts")
+                self.databricks.ensure_volume(settings.target_catalog, "de_agent_artifacts", "artifacts")
+            except Exception:  # noqa: BLE001
+                pass  # Non-fatal; the write will surface a clear error if it still fails.
+        else:
+            artifact_dir = str(Path(tempfile.gettempdir()) / "de_agent_artifacts")
         self.artifacts = ArtifactStore(artifact_dir)
+
 
     @staticmethod
     def _build_databricks(settings: Settings) -> DatabricksService:
