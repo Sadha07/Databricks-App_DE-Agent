@@ -1,4 +1,3 @@
-# Generated for Databricks Apps. Keep in sync with pyproject via `make export-reqs`.
 langgraph>=0.2.60
 langgraph-checkpoint-postgres>=2.0.0
 langchain-core>=0.3.0

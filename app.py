@@ -7,6 +7,7 @@ via the command declared in ``app.yaml``.
 
 from __future__ import annotations
 
+
 from de_agent.config.logging import configure_logging
 from de_agent.config.settings import get_settings
 from de_agent.ui.main import render
