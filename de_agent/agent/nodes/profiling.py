@@ -1,4 +1,4 @@
-﻿"""Dataset profiling node."""
+"""Dataset profiling node."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import base64
 from typing import Any
 
 from de_agent.agent.nodes._helpers import ai, record_error
+from de_agent.agent.state import Layer, StageStatus
 from de_agent.config.logging import get_logger
 from de_agent.services.container import get_container
 
@@ -22,6 +23,7 @@ def profiling_node(state: dict[str, Any], config: RunnableConfig) -> dict[str, A
     except Exception as exc:  # noqa: BLE001
         return {
             "errors": record_error(state, node="profiling", message=str(exc)),
+            "layer_status": {**state["layer_status"], Layer.BRONZE.value: StageStatus.FAILED.value},
             "messages": [ai(f"Profiling failed: {exc}")],
         }
     log.info("profiling.done", rows=profile.row_count, cols=profile.column_count)

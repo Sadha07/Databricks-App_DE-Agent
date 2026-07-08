@@ -23,13 +23,13 @@ env:
   - name: ALLOW_CREATE_CATALOG
     value: "false"
   - name: LLM_PROVIDER
-    value: databricks
+    value: groq
   - name: DATABRICKS_LLM_ENDPOINT
     value: databricks-claude-sonnet
   # Secrets are resolved from a Databricks secret scope at deploy time.
   - name: DATABRICKS_WAREHOUSE_ID
     valueFrom: de-agent-warehouse-id
-  - name: DATABASE_URL
-    valueFrom: de-agent-database-url
+  # - name: DATABASE_URL
+  #   valueFrom: de-agent-database-url
   - name: GROQ_API_KEY
     valueFrom: de-agent-groq-key

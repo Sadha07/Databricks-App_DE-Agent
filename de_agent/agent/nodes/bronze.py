@@ -1,4 +1,4 @@
-﻿"""Bronze node â€” raw ingest from the landing table into a bronze table."""
+"""Bronze node — raw ingest from the landing table into a bronze table."""
 
 from __future__ import annotations
 
@@ -6,12 +6,20 @@ from langchain_core.runnables import RunnableConfig
 
 from typing import Any
 
+from de_agent.agent.nodes._helpers import ai, record_error
 from de_agent.agent.nodes.notebook_generation import build_layer
 from de_agent.agent.state import Layer, StageStatus
 from de_agent.domain.plan import ExecutionPlan, LayerSpec
 
 
 def bronze_node(state: dict[str, Any], config: RunnableConfig) -> dict[str, Any]:
+    # Guard: execution_plan must exist (set by planning_node). If missing, fail fast.
+    if "execution_plan" not in state:
+        return {
+            "errors": record_error(state, node="bronze", message="execution_plan missing — planning node may have failed"),
+            "layer_status": {**state["layer_status"], Layer.BRONZE.value: StageStatus.FAILED.value},
+            "messages": [ai("Bronze failed: no execution plan available. Check planning step for errors.")],
+        }
     plan = ExecutionPlan(**state["execution_plan"])
     spec = plan.spec_for(Layer.BRONZE.value) or LayerSpec(
         layer=Layer.BRONZE.value, objective="Ingest raw data as-is"

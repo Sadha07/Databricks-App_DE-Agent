@@ -1,4 +1,4 @@
-﻿"""Planning node â€” generate the Bronze/Silver execution plan."""
+"""Planning node â€” generate the Bronze/Silver execution plan."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from langchain_core.runnables import RunnableConfig
 from typing import Any
 
 from de_agent.agent.nodes._helpers import ai, extract_json, record_error, system_for
+from de_agent.agent.state import Layer, StageStatus
 from de_agent.config.logging import get_logger
 from de_agent.domain.dataset import DatasetProfile
 from de_agent.domain.plan import ExecutionPlan, LayerSpec
@@ -32,6 +33,7 @@ def planning_node(state: dict[str, Any], config: RunnableConfig) -> dict[str, An
     except Exception as exc:  # noqa: BLE001
         return {
             "errors": record_error(state, node="planning", message=str(exc)),
+            "layer_status": {**state["layer_status"], Layer.BRONZE.value: StageStatus.FAILED.value},
             "messages": [ai(f"Planning failed: {exc}")],
         }
 
